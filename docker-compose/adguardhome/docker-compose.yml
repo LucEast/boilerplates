@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    restart: unless-stopped
+    networks:
+      - web
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - /etc/docker/containers/adguard/work:/opt/adguardhome/work
+      - /etc/docker/containers/adguard/conf:/opt/adguardhome/conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adguard.entrypoints=websecure"
+      - "traefik.http.routers.adguard.rule=Host(`${ADGUARD_URL}`)" # change with your own domain/sub domain
+      - "traefik.http.routers.adguard.tls=true"
+      - "traefik.http.routers.adguard.tls.certresolver=default"
+      - "traefik.http.services.adguard.loadbalancer.server.port=80"
+      - "traefik.docker.network=web"
+      
+      # DoT
+      - "traefik.tcp.routers.adguard-dot.rule=HostSNI(`${HOSTNAME}`)"
+      - "traefik.tcp.routers.adguard-dot.entrypoints=dnsovertls"
+      - "traefik.tcp.routers.adguard-dot.tls=true"
+      - "traefik.tcp.routers.adguard-dot.service=adguard"
+      - "traefik.tcp.services.adguard.loadbalancer.server.port=53"
+      
+      - "com.centurylinklabs.watchtower.enable=true" # if you use Watchtower for automatic updates
+      
+networks:
+  web:
+    external: true

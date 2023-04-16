@@ -1,0 +1,36 @@
+version: '3.3'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      - --providers.docker.network=web
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/docker/container/traefik/config:/etc/traefik
+    networks:
+      - web
+    ports:
+      - "80:80" # HTTP
+      - "443:443" # HTTPS
+      # (Optional) Expose Dashboard
+      # - "8080:8080" # Don't do this in production!
+    restart: always
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.$DOMAIN`)"
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=default"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.middlewares.auth.basicauth.usersfile=/etc/traefik/usersfile"
+
+networks:
+  web:
+    name: web
+    external: true

@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  { SERVICE }:
+    image: { IMAGE }
+    container_name: { CONRAINER_NAME }
+    ports:
+      - 8080:80
+    volumes:
+      - { VOLUME }
+    networks:
+      - { NETWORK }
+
+volumes:
+  { VOLUME }
